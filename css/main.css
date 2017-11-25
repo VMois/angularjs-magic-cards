@@ -1,0 +1,33 @@
+.main_div {
+    width: 100%;
+    height: 50%;
+    margin: 15% auto;
+}
+
+.main_table {
+    margin-left:auto; 
+    margin-right:auto;
+}
+
+.main_table td {
+    padding: 0.5em;
+}
+
+h1 {
+    text-align: center;
+    font-style: italic;
+    margin-top: 1em;
+    margin-bottom: 1em;
+}
+
+#table-name-input {
+    text-align: center;
+    font-size: 1.5em;
+    font-style: italic;
+    color: orangered;
+}
+
+#table-enter-button {
+    width: 3em;
+    height: 3em;
+}
