@@ -8,6 +8,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 header('Content-Type: application/json');
 
 $errorObject = new StdClass;
+$returnObject = new StdClass;
 
 // get table 
 if ($method == "GET") {
@@ -21,9 +22,6 @@ if ($method == "GET") {
 
         // set default numRows
         $numRows = 0;
-
-        // create basic return object
-        $returnObject = new StdClass;
 
         // execute query
         $result = $conn->query($sql); 
@@ -57,7 +55,19 @@ if ($method == "GET") {
 // create table
 } else if ($method == "POST") {
     if (isset($_POST['name'])) {
-
+        $name = clearValue($_POST['name']);
+        $sql = "INSERT INTO mtables (name) VALUES ('".$name."')";
+        if ($conn->query($sql) == TRUE) {
+            http_response_code(200);
+            $returnObject->name = $name;
+            $returnObject->count = 0;
+            $returnObject->onboard = 0;
+            echo json_encode( (array)$returnObject );
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong... :(";
+            echo json_encode( (array)$errorObject );
+        }
     } else {
         $errorObject->message = "name is required in POST request";
         http_response_code(404);
