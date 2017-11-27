@@ -10,7 +10,7 @@ header('Content-Type: application/json');
 $errorObject = new StdClass;
 
 // get table 
-if ($method == "GET" && isset($_GET['name'])) {
+if ($method == "GET") {
     if (isset($_GET['name'])) {
 
         // clear value
@@ -47,17 +47,21 @@ if ($method == "GET" && isset($_GET['name'])) {
 
         // set response code to HTTP 200
         http_response_code(200);
-        // return json
+
         echo $json_to_return;
     } else {
+        $errorObject->message = "name is required in GET request";
         http_response_code(404);
+        echo json_encode( (array)$errorObject );
     }
 // create table
 } else if ($method == "POST") {
     if (isset($_POST['name'])) {
 
     } else {
+        $errorObject->message = "name is required in POST request";
         http_response_code(404);
+        echo json_encode( (array)$errorObject );
     }
 } else {
     http_response_code(405);
