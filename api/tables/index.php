@@ -18,7 +18,8 @@ if ($method == "GET") {
         $name = clearValue($_GET['name']);
 
         // create sql query
-        $sql = "SELECT name, count, onboard FROM mtables WHERE name='".$name."'";
+        $sql = "SELECT id, name, count, onboard FROM mtables WHERE name='".$name."'";
+        $cards_sql = "SELECT * FROM mcards WHERE table_id=";
 
         // set default numRows
         $numRows = 0;
@@ -35,6 +36,7 @@ if ($method == "GET") {
                 $returnObject->count = $row["count"];
                 $returnObject->onboard = $row["onboard"];
                 $returnObject->name = $row["name"];
+                $cards_sql = $cards_sql.$row["id"];
             }
         }
 
