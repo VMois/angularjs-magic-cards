@@ -1,7 +1,7 @@
 console.log("[*] Settings load");
 
 var mainSettings = {
-    rootApiPath: location.href
+    rootApiPath: location.origin + location.pathname + "api/"
 };
 
 console.log("[*] Start settings");
