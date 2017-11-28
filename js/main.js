@@ -27,5 +27,18 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http) {
         }
     })
     .then(function(response){
+        var data = response.data;
+        if (data.num_rows === 0) {
+            var payload = "name=" + tableName;
+            $http.post(mainSettings.rootApiPath + "tables/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            })
+            .then(function(response){
+                $scope.table = response.data;
+            });
+        } else {
+            $scope.table = data;
+        }
     });
 });
