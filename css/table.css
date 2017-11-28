@@ -1,0 +1,8 @@
+#add-card-button {
+    position: absolute;
+    z-index: 1000;
+    width: 4em;
+    height: 4em;
+    left: 1em;
+    top: 1em;
+}
