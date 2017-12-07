@@ -19,26 +19,63 @@ mcardsApp.controller('mainController', function($scope, $location) {
     }
 });
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http) {
-    const tableName = $routeParams.tableName;
-    $http.get(mainSettings.rootApiPath + "tables/", {
-        params: {
-            name: tableName
-        }
-    })
-    .then(function(response){
-        var data = response.data;
-        if (data.num_rows === 0) {
-            var payload = "name=" + tableName;
+mcardsApp.service('tableApi', function($http) {
+    /**
+    * Check if table exists.
+    * @param {string} tableName - The name of the table.
+    */
+    this.checkIfExists = function (tableName) {
+        return new Promise(function (resolve, reject) {
+            $http.get(mainSettings.rootApiPath + "tables/", {
+                params: {
+                    name: tableName
+                }
+            }).then(function(response) {
+                const data = response.data;
+                resolve(data.num_rows !== 0, data);
+            }, function(response) {
+                reject();
+            });
+        });
+    }
+
+    /**
+    * Create new table with the given name.
+    * @param {string} tableName - The name of the table.
+    */
+    this.createTable = function (tableName) {
+        const payload = "name=" + tableName;
+        return new Promise(function (resolve, reject) {
             $http.post(mainSettings.rootApiPath + "tables/", payload, {
                 // change default content-type from json to x-www-form
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
-            })
-            .then(function(response){
-                $scope.table = response.data;
+            }).then(function(response) {
+                const data = response.data;
+                resolve(data);
+            }, function(response) {
+                reject();
             });
+        });
+    }
+});
+
+mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi) {
+    const tableName = $routeParams.tableName;
+    tableApi.checkIfExists(tableName)
+    .then(function (exists, data) {
+        if (!exists) {
+            tableApi.createTable(tableName)
+            .then((createData) => {
+                $scope.table = createData;
+            })
+            .catch(() => {
+                console.log("[!] Error - table create");
+            })
         } else {
             $scope.table = data;
         }
-    });
+    })
+    .catch(function () {
+        console.log("[!] Error - check table");
+    })
 });
