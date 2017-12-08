@@ -59,8 +59,49 @@ mcardsApp.service('tableApi', function($http) {
     }
 });
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi) {
+mcardsApp.directive('card', ['$document', function($document) {
+    return {
+      link: function(scope, element, attr) {
+        var startX = 0, startY = 0; 
+        // default start x and y
+        var x = 200;
+        var y = 200;
+        element.on('mousedown', function(event) {
+          event.preventDefault();
+          startX = event.pageX - x;
+          startY = event.pageY - y;
+          $document.on('mousemove', mousemove);
+          $document.on('mouseup', mouseup);
+        });
+  
+        function mousemove(event) {
+          var testX = event.pageX - x;
+          var testY = event.pageY - y;
+          if (testX < 0 || testY < 0) {
+            $document.off('mousemove', mousemove);
+            $document.off('mouseup', mouseup);
+            return;
+          }
+          y = event.pageY - startY;
+          x = event.pageX - startX;
+          element.css({
+            top: y + 'px',
+            left: x + 'px'
+          });
+        }
+  
+        function mouseup() {
+          $document.off('mousemove', mousemove);
+          $document.off('mouseup', mouseup);
+        }
+      }
+    };
+  }]);
+
+mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile) {
     const tableName = $routeParams.tableName;
+    const rootTable = angular.element(document.getElementById('rootTable'));
+
     tableApi.checkIfExists(tableName)
     .then(function (exists, data) {
         if (!exists) {
@@ -77,5 +118,10 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     })
     .catch(function () {
         console.log("[!] Error - check table");
-    })
+    });
+
+    $scope.addNewCard = function() {
+        var newCard = $compile("<div card class='base_card'></div>")( $scope );
+        rootTable.append(newCard);
+    }
 });

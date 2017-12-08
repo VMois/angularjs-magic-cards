@@ -6,3 +6,14 @@
     left: 1em;
     top: 1em;
 }
+
+.base_card {
+    width: 100px;
+    height: 100px;
+    background-color: green;
+    position: absolute;
+    cursor: pointer;
+    z-index: 10;
+    top: 200px;
+    left: 200px;
+}
