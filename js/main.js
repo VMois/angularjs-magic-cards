@@ -103,9 +103,9 @@ mcardsApp.directive('card', ['$document', function($document) {
           $document.off('mouseup', mouseup);
         }
 
-        scope.deleteThisCard = function () {
+        scope.deleteThisCard = function (ev) {
             // TODO: Add database call to delete
-            element.remove();
+            ev.path[1].remove();
         }
       }
     };
