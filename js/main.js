@@ -108,18 +108,26 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
 
+    // default values for table statistics
+    $scope.all_cards_count = 0;
+    $scope.current_cards_count = 0;
+
     tableApi.checkIfExists(tableName)
     .then(function (exists, data) {
         if (!exists) {
             tableApi.createTable(tableName)
             .then((createData) => {
                 $scope.table = createData;
+                $scope.all_cards_count = createData.count;
+                $scope.current_cards_count = createData.onboard;
             })
             .catch(() => {
                 console.log("[!] Error - table create");
             })
         } else {
             $scope.table = data;
+            $scope.all_cards_count = data.count;
+            $scope.current_cards_count = data.onboard;
         }
     })
     .catch(function () {

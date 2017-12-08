@@ -7,6 +7,13 @@
     top: 1em;
 }
 
+.table-stat {
+    position: absolute;
+    z-index: 1000;
+    top: 2em;
+    right: 3em;
+}
+
 .base_card {
     width: 200px;
     height: 200px;
