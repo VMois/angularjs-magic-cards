@@ -8,6 +8,9 @@
 }
 
 .table-stat {
+    background-color: #ffffff;
+    padding: 0.5em;
+    border: 0.1em solid green;
     position: absolute;
     z-index: 1000;
     top: 2em;
@@ -18,7 +21,7 @@
     width: 200px;
     height: 200px;
     border: 0.1em solid black;
-    background-color: grey;
+    background-color: #ffffff;
     position: absolute;
     cursor: pointer;
     z-index: 10;
@@ -29,7 +32,7 @@
 .delete-icon {
     position: absolute;
     right: 0.5em;
-    bottom: 0.5em;
+    top: 0.5em;
     width: 1.5em;
     height: 1.5em;
 }

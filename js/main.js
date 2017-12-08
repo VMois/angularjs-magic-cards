@@ -19,6 +19,13 @@ mcardsApp.controller('mainController', function($scope, $location) {
     }
 });
 
+mcardsApp.service('viewPreferences', function() {
+    this.setTableBackground = function(pathToStaticFile) {
+        document.documentElement.style.setProperty("background-image", "url('" + pathToStaticFile + "')");
+        document.documentElement.style.setProperty("background-size", "cover");
+    };
+});
+
 mcardsApp.service('tableApi', function($http) {
     /**
     * Check if table exists.
@@ -104,9 +111,12 @@ mcardsApp.directive('card', ['$document', function($document) {
     };
   }]);
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile) {
+mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences) {
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
+
+    // set default background image
+    viewPreferences.setTableBackground(mainSettings.defaultBackgroundImage);
 
     // default values for table statistics
     $scope.all_cards_count = 0;
