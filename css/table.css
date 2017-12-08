@@ -29,10 +29,18 @@
     left: 200px;
 }
 
-.delete-icon {
+.base_card .icon-default {
     position: absolute;
-    right: 0.5em;
-    top: 0.5em;
     width: 1.5em;
     height: 1.5em;
+}
+
+.base_card .delete-icon {
+    right: 0.5em;
+    top: 0.5em;
+}
+
+.base_card .resize-icon {
+    bottom: 0.5em;
+    right: 0.5em;
 }
