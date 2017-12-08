@@ -8,12 +8,21 @@
 }
 
 .base_card {
-    width: 100px;
-    height: 100px;
-    background-color: green;
+    width: 200px;
+    height: 200px;
+    border: 0.1em solid black;
+    background-color: grey;
     position: absolute;
     cursor: pointer;
     z-index: 10;
     top: 200px;
     left: 200px;
+}
+
+.delete-icon {
+    position: absolute;
+    right: 0.5em;
+    bottom: 0.5em;
+    width: 1.5em;
+    height: 1.5em;
 }

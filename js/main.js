@@ -61,6 +61,7 @@ mcardsApp.service('tableApi', function($http) {
 
 mcardsApp.directive('card', ['$document', function($document) {
     return {
+      templateUrl: 'card.html',
       link: function(scope, element, attr) {
         var startX = 0, startY = 0; 
         // default start x and y
@@ -94,6 +95,11 @@ mcardsApp.directive('card', ['$document', function($document) {
           $document.off('mousemove', mousemove);
           $document.off('mouseup', mouseup);
         }
+
+        scope.deleteThisCard = function () {
+            // TODO: Add database call to delete
+            element.remove();
+        }
       }
     };
   }]);
@@ -121,6 +127,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     });
 
     $scope.addNewCard = function() {
+        // TODO: Add database call to create new card
         var newCard = $compile("<div card class='base_card'></div>")( $scope );
         rootTable.append(newCard);
     }
