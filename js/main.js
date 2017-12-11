@@ -69,8 +69,14 @@ mcardsApp.service('tableApi', function($http) {
 mcardsApp.directive('card', ['$document', function($document) {
     return {
       templateUrl: 'card.html',
+      scope: {},
       link: function(scope, element, attr) {
         var startX = 0, startY = 0; 
+        var startResizeX = 0, startResizeY = 0;
+
+        var cardWidth = element[0].clientWidth;
+        var cardHeight = element[0].clientHeight;
+
         // default start x and y
         var x = 200;
         var y = 200;
@@ -83,13 +89,6 @@ mcardsApp.directive('card', ['$document', function($document) {
         });
   
         function mousemove(event) {
-          var testX = event.pageX - x;
-          var testY = event.pageY - y;
-          if (testX < 0 || testY < 0) {
-            $document.off('mousemove', mousemove);
-            $document.off('mouseup', mouseup);
-            return;
-          }
           y = event.pageY - startY;
           x = event.pageX - startX;
           element.css({
@@ -107,6 +106,36 @@ mcardsApp.directive('card', ['$document', function($document) {
             // TODO: Add database call to delete
             ev.path[1].remove();
         }
+        scope.resizeMouseDown = function (ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            startResizeX = ev.pageX;
+            startResizeY = ev.pageY;
+            $document.on('mousemove', resizeMouseMove);
+            $document.on('mouseup', resizeMouseUp);
+        };
+        function resizeMouseMove(ev) {
+            var currentX = ev.pageX;
+            var currentY = ev.pageY;
+            var xResize = currentX - startResizeX;
+            var yResize = currentY - startResizeY;
+
+            startResizeX = currentX;
+            startResizeY = currentY;
+
+            cardWidth += xResize;
+            cardHeight += yResize;
+            element.css({
+                width: cardWidth + 'px',
+                height: cardHeight + 'px'
+            });
+        };
+        function resizeMouseUp(ev) {
+            // TODO: Write size of the card to database
+            // Check if size is changed and after that send data to server
+            $document.off('mousemove', resizeMouseMove);
+            $document.off('mouseup', resizeMouseUp);
+        };
       }
     };
   }]);
