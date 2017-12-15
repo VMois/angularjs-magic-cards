@@ -26,6 +26,45 @@ mcardsApp.service('viewPreferences', function() {
     };
 });
 
+mcardsApp.service('cardsHelper', function() {
+    /**
+    * Generate UniqueID as string.
+    */
+    this.generateUniqueId = function() {
+        return "_" + Math.random().toString(36).substr(2, 9);
+    };
+
+    /**
+    * Find Id of element in given list by Unique ID.
+    * @param {string} uid - Unique ID of element to find.
+    * @param {array} list - List of objects (object -> with el property, as angular element)
+    */
+    this.findListIdByUniqueID = function (uid, list) {
+        for (var i = 0; i < list.length; i++) {
+            if (list[i].el.attr('data-uid') === uid) {
+                return i;
+            }
+        }
+    };
+
+    /**
+    * Check if table exists.
+    * @param {string} tableName - The name of the table.
+    */
+    this.updateZindex = function (startId, list) {
+        for (var i = startId; i < list.length; i++) {
+            var cardObject = list[i];
+            cardObject.el.css({
+                zIndex: i
+            });
+        }
+    };
+
+    this.deleteCardFromList = function (uid, list) {
+
+    }
+});
+
 mcardsApp.service('tableApi', function($http) {
     /**
     * Check if table exists.
@@ -86,6 +125,7 @@ mcardsApp.directive('card', ['$document', function($document) {
           startY = event.pageY - y;
           $document.on('mousemove', mousemove);
           $document.on('mouseup', mouseup);
+          scope.$parent.setCardFocus(element);
         });
   
         function mousemove(event) {
@@ -105,6 +145,7 @@ mcardsApp.directive('card', ['$document', function($document) {
         scope.deleteThisCard = function (ev) {
             // TODO: Add database call to delete
             ev.path[1].remove();
+            scope.$parent.deleteCardFromList(element);
         }
         scope.resizeMouseDown = function (ev) {
             ev.stopPropagation();
@@ -113,6 +154,7 @@ mcardsApp.directive('card', ['$document', function($document) {
             startResizeY = ev.pageY;
             $document.on('mousemove', resizeMouseMove);
             $document.on('mouseup', resizeMouseUp);
+            scope.$parent.setCardFocus(element);
         };
         function resizeMouseMove(ev) {
             var currentX = ev.pageX;
@@ -140,9 +182,10 @@ mcardsApp.directive('card', ['$document', function($document) {
     };
   }]);
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences) {
+mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper) {
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
+    const cardsList = [];
 
     // set default background image
     viewPreferences.setTableBackground(mainSettings.defaultBackgroundImage);
@@ -175,7 +218,31 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
 
     $scope.addNewCard = function() {
         // TODO: Add database call to create new card
+        var newCardObject = {};
+
         var newCard = $compile("<div card class='base_card'></div>")( $scope );
+
+        newCardObject.el = newCard;
+        newCardObject.el.attr('data-uid', cardsHelper.generateUniqueId());
+        newCardObject.el.css({
+            zIndex: cardsList.length
+        });
+        cardsList.push(newCardObject);
         rootTable.append(newCard);
     }
+
+    $scope.setCardFocus = function(element) {
+        const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
+
+        cardsList.push(cardsList[deleteId]);
+        cardsList.splice(deleteId, 1);
+
+        cardsHelper.updateZindex(deleteId, cardsList);
+    };
+
+    $scope.deleteCardFromList = function(element) {
+        const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
+        cardsList.splice(deleteId, 1);
+        cardsHelper.updateZindex(deleteId, cardsList);
+    };
 });
