@@ -266,7 +266,13 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     }
 
     $scope.setCardFocus = function(element) {
+        cardsList.forEach(function(elObj) {
+            elObj.el.removeClass('active-card');
+        });
+
         const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
+
+        element.addClass('active-card');
 
         cardsList.push(cardsList[deleteId]);
         cardsList.splice(deleteId, 1);

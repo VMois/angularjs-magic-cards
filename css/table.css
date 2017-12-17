@@ -58,6 +58,10 @@
     margin: 2em;
 }
 
+.active-card {
+    border: 0.1em solid red;
+}
+
 .main-edit {
     position: relative;
     margin: 0 auto;
