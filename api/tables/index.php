@@ -42,7 +42,7 @@ if ($method == "GET") {
         // update num_rows
         $returnObject->num_rows = $numRows;
 
-        $cards_sql = "SELECT * FROM mcards WHERE table_id=".$returnObject->id;
+        $cards_sql = "SELECT * FROM mcards WHERE table_id=".$returnObject->id." ORDER BY prev";
         $result = $conn->query($cards_sql);
         $returnObject->cards = array();
         if($result->num_rows > 0) {

@@ -26,7 +26,7 @@ mcardsApp.service('viewPreferences', function() {
     };
 });
 
-mcardsApp.service('cardsHelper', function() {
+mcardsApp.service('cardsHelper', function($compile) {
     /**
     * Generate UniqueID as string.
     */
@@ -51,8 +51,8 @@ mcardsApp.service('cardsHelper', function() {
     * Check if table exists.
     * @param {string} tableName - The name of the table.
     */
-    this.updateZindex = function (startId, list) {
-        for (var i = startId; i < list.length; i++) {
+    this.updateZindex = function (list) {
+        for (var i = 0; i < list.length; i++) {
             var cardObject = list[i];
             cardObject.el.css({
                 zIndex: i
@@ -60,8 +60,32 @@ mcardsApp.service('cardsHelper', function() {
         }
     };
 
-    this.deleteCardFromList = function (uid, list) {
-
+    /**
+     * Restore cards from database on board
+     * @param {array} cards 
+     */
+    this.restoreCards = function(cards, scope) {
+        const rootTable = angular.element(document.getElementById('rootTable'));
+        const cardsList = [];
+        cards.forEach(function(card) {
+            var restoredCard = $compile("<div card class='base_card'></div>")( scope );
+            restoredCard.attr('data-uid', card.id);
+            restoredCard.css({
+                width: card.width + 'px',
+                height: card.height + 'px'
+            });
+            restoredCard.css({
+                top: card.y + 'px',
+                left: card.x + 'px'
+            });
+            rootTable.append(restoredCard);
+            restoredCard.text(card.text);
+            var newObj = {
+                el: restoredCard
+            };
+            cardsList.push(newObj);
+        });
+        return cardsList;
     }
 });
 
@@ -145,8 +169,8 @@ mcardsApp.directive('card', ['$document', function($document) {
         var cardHeight = element[0].clientHeight;
 
         // default start x and y
-        var x = 200;
-        var y = 200;
+        var x = element[0].offsetLeft;
+        var y = element[0].offsetTop;
         element.on('mousedown', function(event) {
           event.preventDefault();
           startX = event.pageX - x;
@@ -220,7 +244,7 @@ mcardsApp.directive('card', ['$document', function($document) {
 mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper) {
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
-    const cardsList = [];
+    var cardsList = [];
 
     // set default background image
     viewPreferences.setTableBackground(mainSettings.defaultBackgroundImage);
@@ -242,6 +266,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
                 if (createData) {
                     $scope.$apply(function () {
                         $scope.table = createData;
+                        cardsList = cardsHelper.restoreCards(createData.cards, $scope);
                     });
                 }
             })
@@ -252,6 +277,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
             if (data) {
                 $scope.$apply(function () {
                     $scope.table = data;
+                    cardsList = cardsHelper.restoreCards(data.cards, $scope);
                 });
             }
         }
@@ -268,11 +294,9 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
 
         newCardObject.el = newCard;
         newCardObject.el.attr('data-uid', cardsHelper.generateUniqueId());
-        newCardObject.el.css({
-            zIndex: cardsList.length
-        });
         cardsList.push(newCardObject);
         rootTable.append(newCard);
+        cardsHelper.updateZindex(cardsList);
     }
 
     $scope.setCardFocus = function(element) {
@@ -287,13 +311,13 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         cardsList.push(cardsList[deleteId]);
         cardsList.splice(deleteId, 1);
 
-        cardsHelper.updateZindex(deleteId, cardsList);
+        cardsHelper.updateZindex(cardsList);
     };
 
     $scope.deleteCardFromList = function(element) {
         const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
         cardsList.splice(deleteId, 1);
-        cardsHelper.updateZindex(deleteId, cardsList);
+        cardsHelper.updateZindex(cardsList);
     };
 
     $scope.editCard = function (text, element) {
