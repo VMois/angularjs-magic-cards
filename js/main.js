@@ -105,6 +105,31 @@ mcardsApp.service('tableApi', function($http) {
     }
 });
 
+mcardsApp.directive('edit', ['$document', function($document) {
+    return {
+      templateUrl: 'edit.html',
+      scope: {
+          details: '='
+      },
+      link: function(scope, element, attr) {
+        scope.save = function () {
+            scope.$parent.editCardEnd(scope.text, scope.el);
+        };
+
+        scope.cancel = function () {
+            scope.$parent.editCardEnd();
+        };
+
+        scope.$watch("details", function(newValue, oldValue) {
+            if (newValue) {
+                scope.el = newValue.el;
+                scope.text = newValue.text;
+            }
+        });
+      }
+    }
+}]);
+
 mcardsApp.directive('card', ['$document', function($document) {
     return {
       templateUrl: 'card.html',
@@ -147,6 +172,13 @@ mcardsApp.directive('card', ['$document', function($document) {
             ev.path[1].remove();
             scope.$parent.deleteCardFromList(element);
         }
+
+        scope.editCard = function () {
+            // TODO: Find a better way to get text from card
+            const text = element.find("div").text();
+            scope.$parent.editCard(text, element);
+        };
+
         scope.resizeMouseDown = function (ev) {
             ev.stopPropagation();
             ev.preventDefault();
@@ -193,6 +225,8 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     // default values for table statistics
     $scope.all_cards_count = 0;
     $scope.current_cards_count = 0;
+
+    $scope.isEdit = false;
 
     tableApi.checkIfExists(tableName)
     .then(function (exists, data) {
@@ -245,4 +279,20 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         cardsList.splice(deleteId, 1);
         cardsHelper.updateZindex(deleteId, cardsList);
     };
+
+    $scope.editCard = function (text, element) {
+        $scope.editDetails = { 
+            text: text,
+            el: element
+        };
+        $scope.isEdit = true;
+    };
+
+    $scope.editCardEnd = function(text, element) {
+        // TODO: Write new data to database
+        $scope.isEdit = false;
+        if (element) {
+            element.find("div").text(text);
+        }
+    }
 });
