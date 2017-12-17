@@ -346,6 +346,10 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
             newCardObject.el.attr('data-uid', newId);
             cardsList.push(newCardObject);
             cardsHelper.updateZindex(cardsList);
+            $scope.$apply(function () {
+                $scope.table.onboard += 1;
+                $scope.table.count += 1;
+            });
         })
         .catch(function(err) {
             console.error(err);
@@ -376,6 +380,9 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
             const deleteId = cardsHelper.findListIdByUniqueID(cardId, cardsList);
             cardsList.splice(deleteId, 1);
             cardsHelper.updateZindex(cardsList);
+            $scope.$apply(function () {
+                $scope.table.onboard -= 1;
+            });
         });
     };
 
