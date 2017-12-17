@@ -33,6 +33,7 @@ if ($method == "GET") {
 
             // update new object
             while($row = $result->fetch_assoc()) {
+                $returnObject->id = $row["id"];
                 $returnObject->count = $row["count"];
                 $returnObject->onboard = $row["onboard"];
                 $returnObject->name = $row["name"];
