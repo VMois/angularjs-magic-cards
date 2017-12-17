@@ -1,7 +1,7 @@
 <img id="add-card-button" ng-click="addNewCard()" src="images/icons/add_plus.svg" alt="add_card">
 <div class="table-stat">
-    Przebieg: <strong><span>{{ all_cards_count }}</span></strong><br>
-    Na lodówce: <strong><span>{{ current_cards_count }}</span></strong>
+    Przebieg: <strong><span>{{ table.count }}</span></strong><br>
+    Na lodówce: <strong><span>{{ table.onboard }}</span></strong>
 </div>
 <div id="rootTable"></div>
 <div edit data-details="editDetails" data-ng-show="isEdit" class='base_edit'></div>

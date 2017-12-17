@@ -77,8 +77,11 @@ mcardsApp.service('tableApi', function($http) {
                     name: tableName
                 }
             }).then(function(response) {
-                const data = response.data;
-                resolve(data.num_rows !== 0, data);
+                const res = {
+                    exists: response.data.num_rows !== 0,
+                    data: response.data
+                }
+                resolve(res);
             }, function(response) {
                 reject();
             });
@@ -96,7 +99,7 @@ mcardsApp.service('tableApi', function($http) {
                 // change default content-type from json to x-www-form
                 headers: {'Content-Type': 'application/x-www-form-urlencoded'}
             }).then(function(response) {
-                const data = response.data;
+                var data = response.data;
                 resolve(data);
             }, function(response) {
                 reject();
@@ -223,27 +226,34 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     viewPreferences.setTableBackground(mainSettings.defaultBackgroundImage);
 
     // default values for table statistics
-    $scope.all_cards_count = 0;
-    $scope.current_cards_count = 0;
+    $scope.table = {
+        count: 0,
+        onboard: 0
+    };
 
     $scope.isEdit = false;
 
     tableApi.checkIfExists(tableName)
-    .then(function (exists, data) {
-        if (!exists) {
+    .then(function (res) {
+        const data = res.data;
+        if (!res.exists) {
             tableApi.createTable(tableName)
             .then((createData) => {
-                $scope.table = createData;
-                $scope.all_cards_count = createData.count;
-                $scope.current_cards_count = createData.onboard;
+                if (createData) {
+                    $scope.$apply(function () {
+                        $scope.table = createData;
+                    });
+                }
             })
             .catch(() => {
                 console.log("[!] Error - table create");
             })
         } else {
-            $scope.table = data;
-            $scope.all_cards_count = data.count;
-            $scope.current_cards_count = data.onboard;
+            if (data) {
+                $scope.$apply(function () {
+                    $scope.table = data;
+                });
+            }
         }
     })
     .catch(function () {

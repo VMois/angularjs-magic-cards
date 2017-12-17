@@ -19,7 +19,6 @@ if ($method == "GET") {
 
         // create sql query
         $sql = "SELECT id, name, count, onboard FROM mtables WHERE name='".$name."'";
-        $cards_sql = "SELECT * FROM mcards WHERE table_id=";
 
         // set default numRows
         $numRows = 0;
@@ -33,16 +32,32 @@ if ($method == "GET") {
 
             // update new object
             while($row = $result->fetch_assoc()) {
-                $returnObject->id = $row["id"];
-                $returnObject->count = $row["count"];
-                $returnObject->onboard = $row["onboard"];
+                $returnObject->id = (int) $row["id"];
+                $returnObject->count = (int) $row["count"];
+                $returnObject->onboard = (int) $row["onboard"];
                 $returnObject->name = $row["name"];
-                $cards_sql = $cards_sql.$row["id"];
             }
         }
 
         // update num_rows
         $returnObject->num_rows = $numRows;
+
+        $cards_sql = "SELECT * FROM mcards WHERE table_id=".$returnObject->id;
+        $result = $conn->query($cards_sql);
+        $returnObject->cards = array();
+        if($result->num_rows > 0) {
+            while($row = $result->fetch_assoc()) {
+                $temp = new StdClass;
+                $temp->id = (int) $row['id'];
+                $temp->x = (int) $row['x'];
+                $temp->y = (int) $row['y'];
+                $temp->width = (int) $row['width'];
+                $temp->height = (int) $row['height'];
+                $temp->text = $row['text'];
+                $temp->prev = (int) $row['prev'];
+                array_push($returnObject->cards, $temp);
+            }
+        }
 
         $json_to_return = json_encode( (array)$returnObject );
 
@@ -60,11 +75,19 @@ if ($method == "GET") {
     if (isset($_POST['name'])) {
         $name = clearValue($_POST['name']);
         $sql = "INSERT INTO mtables (name) VALUES ('".$name."')";
+        $afterSql = "SELECT id, name, count, onboard FROM mtables WHERE name='".$name."'";
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
-            $returnObject->name = $name;
-            $returnObject->count = 0;
-            $returnObject->onboard = 0;
+            $result = $conn->query($afterSql);
+            if ($result->num_rows == 1) {
+                // update new object
+                while($row = $result->fetch_assoc()) {
+                    $returnObject->id = (int) $row["id"];
+                    $returnObject->count = (int) $row["count"];
+                    $returnObject->onboard = (int) $row["onboard"];
+                    $returnObject->name = $row["name"];
+                }
+            }
             echo json_encode( (array)$returnObject );
         } else {
             http_response_code(500);

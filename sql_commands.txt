@@ -1,0 +1,20 @@
+SQL Commands used in application.
+
+Triggers:
+
+delimiter |
+CREATE Trigger increase_cards AFTER INSERT ON mcards 
+FOR EACH ROW BEGIN 
+    UPDATE mtables set mtables.count = mtables.count + 1 where id = NEW.table_id; 
+    UPDATE mtables set mtables.onboard = mtables.onboard + 1 where id = NEW.table_id; 
+END
+|
+delimiter ;
+
+delimiter |
+CREATE Trigger decrease_cards AFTER DELETE ON mcards 
+FOR EACH ROW BEGIN 
+    UPDATE mtables set mtables.onboard = mtables.onboard - 1 where id = NEW.table_id; 
+END
+|
+delimiter ;
