@@ -31,7 +31,7 @@ mcardsApp.service('cardsHelper', function($compile) {
     * Generate UniqueID as string.
     */
     this.generateUniqueId = function() {
-        return "_" + Math.random().toString(36).substr(2, 9);
+        return Math.random().toString(36).substr(2, 9);
     };
 
     /**
@@ -78,14 +78,47 @@ mcardsApp.service('cardsHelper', function($compile) {
                 top: card.y + 'px',
                 left: card.x + 'px'
             });
-            rootTable.append(restoredCard);
+            //rootTable.append(restoredCard);
             restoredCard.text(card.text);
             var newObj = {
                 el: restoredCard
             };
             cardsList.push(newObj);
         });
+        for (var i = 0; i < cardsList.length; i++) {
+            rootTable.append(cardsList[i].el);
+        }
         return cardsList;
+    }
+});
+
+mcardsApp.service('cardsApi', function($http) {
+    this.createCard = function(card) {
+        const payload = `cardX=${card.x}&cardY=${card.y}&width=${card.width}&height=${card.height}&text=${card.text}&tableId=${card.tableId}&prevId=${card.prev}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response.data);
+            }, function(response) {
+                reject(response);
+            });
+        });
+    }
+
+    this.deleteCard = function(cardId) {
+        const payload = `cardId=${cardId}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response);
+            }, function(response) {
+                reject(response);
+            });
+        });
     }
 });
 
@@ -196,8 +229,8 @@ mcardsApp.directive('card', ['$document', function($document) {
 
         scope.deleteThisCard = function (ev) {
             // TODO: Add database call to delete
-            ev.path[1].remove();
             scope.$parent.deleteCardFromList(element);
+            ev.path[1].remove();
         }
 
         scope.editCard = function () {
@@ -241,7 +274,7 @@ mcardsApp.directive('card', ['$document', function($document) {
     };
   }]);
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper) {
+mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper, cardsApi) {
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
     var cardsList = [];
@@ -291,12 +324,33 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         var newCardObject = {};
 
         var newCard = $compile("<div card class='base_card'></div>")( $scope );
-
-        newCardObject.el = newCard;
-        newCardObject.el.attr('data-uid', cardsHelper.generateUniqueId());
-        cardsList.push(newCardObject);
+        var prevId = 0;
+        if (cardsList.length > 0) {
+            prevId = parseInt(cardsList[cardsList.length - 1].el.attr('data-uid'));
+        }
+        var card = {
+            width: 200,
+            height: 200,
+            x: 200,
+            y: 200,
+            text: "",
+            prev: prevId,
+            tableId: $scope.table.id
+        };
         rootTable.append(newCard);
-        cardsHelper.updateZindex(cardsList);
+
+        cardsApi.createCard(card)
+        .then(function(data){
+            var newId = data.id;
+            newCardObject.el = newCard;
+            newCardObject.el.attr('data-uid', newId);
+            cardsList.push(newCardObject);
+            cardsHelper.updateZindex(cardsList);
+        })
+        .catch(function(err) {
+            console.error(err);
+            newCard.remove();
+        });
     }
 
     $scope.setCardFocus = function(element) {
@@ -315,9 +369,14 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     };
 
     $scope.deleteCardFromList = function(element) {
-        const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
-        cardsList.splice(deleteId, 1);
-        cardsHelper.updateZindex(cardsList);
+        const cardId = element.attr('data-uid');
+        cardsApi.deleteCard(cardId)
+        .then(function() {
+            element.remove();
+            const deleteId = cardsHelper.findListIdByUniqueID(cardId, cardsList);
+            cardsList.splice(deleteId, 1);
+            cardsHelper.updateZindex(cardsList);
+        });
     };
 
     $scope.editCard = function (text, element) {
