@@ -1,0 +1,11 @@
++ (0.5p) - dodawanie kolejnych magnesów
++ (1p) - ruszanie magnesem
++ (1.5p) - resize magnesu
++ (0.5p) - usuwanie magnesu
+- (0.5p) - liczniki
+? (1p) - warstwy
+? (1p) - WYSiWYG
+- (2p) - zapis tablicy w bazie
+- (2p) - przywracanie tablicy z bazy
+
+Suma: 3.5
