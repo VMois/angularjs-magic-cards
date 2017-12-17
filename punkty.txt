@@ -2,10 +2,10 @@
 + (1p) - ruszanie magnesem
 + (1.5p) - resize magnesu
 + (0.5p) - usuwanie magnesu
-- (0.5p) - liczniki
++ (0.5p) - liczniki
 + (1p) - warstwy
 ? (1p) - WYSiWYG
 - (2p) - zapis tablicy w bazie
 - (2p) - przywracanie tablicy z bazy
 
-Suma: 4.5
+Suma: 5
