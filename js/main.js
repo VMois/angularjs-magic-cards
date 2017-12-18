@@ -218,7 +218,7 @@ mcardsApp.directive('edit', ['$document', function($document) {
     }
 }]);
 
-mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsApi) {
+mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($document, cardsApi, $timeout) {
     return {
       templateUrl: 'card.html',
       scope: {},
@@ -229,7 +229,16 @@ mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsA
         var cardWidth = element[0].clientWidth;
         var cardHeight = element[0].clientHeight;
 
-        const cardId = parseInt(element.attr('data-uid'));
+        // Terrible solution, I know (
+        var cardId = parseInt(element.attr('data-uid'));
+        if(isNaN(cardId)) {
+            cardId = 0;
+        };
+        function run() {
+            cardId = parseInt(element.attr('data-uid'));
+            console.log(cardId);
+        }
+        $timeout(run, 100);
 
         // default start x and y
         var x = element[0].offsetLeft;
@@ -255,7 +264,10 @@ mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsA
         function mouseup() {
           $document.off('mousemove', mousemove);
           $document.off('mouseup', mouseup);
-          cardsApi.updateCardPosition(cardId, x, y);
+          cardsApi.updateCardPosition(cardId, x, y)
+          .catch(function(err) {
+              console.error(err);
+          });
         }
 
         scope.deleteThisCard = function (ev) {
@@ -300,7 +312,10 @@ mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsA
             // Check if size is changed and after that send data to server
             $document.off('mousemove', resizeMouseMove);
             $document.off('mouseup', resizeMouseUp);
-            cardsApi.updateCardSize(cardId, cardWidth, cardHeight);
+            cardsApi.updateCardSize(cardId, cardWidth, cardHeight)
+            .catch(function(err) {
+                console.error(err);
+            });
         };
       }
     };
@@ -369,18 +384,18 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
             prev: prevId,
             tableId: $scope.table.id
         };
-        rootTable.append(newCard);
 
         cardsApi.createCard(card)
         .then(function(data){
-            var newId = data.id;
-            newCardObject.el = newCard;
-            newCardObject.el.attr('data-uid', newId);
-            cardsList.push(newCardObject);
-            cardsHelper.updateZindex(cardsList);
             $scope.$apply(function () {
+                var newId = data.id;
+                newCardObject.el = newCard;
                 $scope.table.onboard += 1;
                 $scope.table.count += 1;
+                newCardObject.el.attr('data-uid', newId);
+                cardsList.push(newCardObject);
+                cardsHelper.updateZindex(cardsList);
+                rootTable.append(newCardObject.el);
             });
         })
         .catch(function(err) {
