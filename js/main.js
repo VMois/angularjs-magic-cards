@@ -26,7 +26,7 @@ mcardsApp.service('viewPreferences', function() {
     };
 });
 
-mcardsApp.service('cardsHelper', function($compile) {
+mcardsApp.service('cardsHelper', function($compile, $timeout) {
     /**
     * Generate UniqueID as string.
     */
@@ -78,7 +78,9 @@ mcardsApp.service('cardsHelper', function($compile) {
                 top: card.y + 'px',
                 left: card.x + 'px'
             });
-            restoredCard.text(card.text);
+            $timeout(function () {
+                restoredCard.find("div").text(card.text)
+            }, 100);
             var newObj = {
                 el: restoredCard
             };
@@ -150,6 +152,20 @@ mcardsApp.service('cardsApi', function($http) {
 
     this.updateCardZindex = function(firstCardId, secondCardId, firstCardPrev, secondCardPrev) {
         const payload = `firstCardId=${firstCardId}&secondCardId=${secondCardId}&firstCardPrev=${firstCardPrev}&secondCardPrev=${secondCardPrev}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response);
+            }, function(response) {
+                reject(response);
+            });
+        });
+    }
+
+    this.updateText = function(cardId, text) {
+        const payload = `text=${text}&cardId=${cardId}`;
         return new Promise(function (resolve, reject) {
             $http.post(mainSettings.rootApiPath + "cards/", payload, {
                 // change default content-type from json to x-www-form
@@ -472,10 +488,16 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     };
 
     $scope.editCardEnd = function(text, element) {
-        // TODO: Write new data to database
-        $scope.isEdit = false;
         if (element) {
-            element.find("div").text(text);
+            const cardId = parseInt(element.attr('data-uid'));
+            cardsApi.updateText(cardId, text)
+            .then(function() {
+                element.find("div").text(text);
+            })
+            .catch(function(err) {
+                console.error(err);
+            });
+            $scope.isEdit = false;
         }
     }
 });

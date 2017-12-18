@@ -60,18 +60,6 @@ if ($method == "POST") {
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
-    } else if (isset($_POST['cardId'])) {
-        $cardId = clearValue($_POST['cardId']);
-        $sql = "DELETE FROM mcards WHERE id=".$cardId;
-        if ($conn->query($sql) == TRUE) {
-            http_response_code(200);
-            $returnObject->status = "DELETED";
-        } else {
-            http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
-            $errorObject->detailedMessage = $conn->error;
-            $error = true;
-        }
     } else if (isset($_POST['firstCardId']) && isset($_POST['secondCardId']) 
     && isset($_POST['firstCardPrev']) && isset($_POST['secondCardPrev'])) {
         $firstCardId = clearValue($_POST['firstCardId']);
@@ -89,7 +77,31 @@ if ($method == "POST") {
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
-
+    } else if (isset($_POST['cardId']) && isset($_POST['text'])) {
+        $cardId = clearValue($_POST['cardId']);
+        $text = clearValue($_POST['text']);
+        $sql = "UPDATE mcards SET text='".$text."' WHERE id=".$cardId;
+        if ($conn->query($sql) == TRUE) {
+            http_response_code(200);
+            $returnObject->status = "UPDATED TEXT";
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong in text... :(";
+            $errorObject->detailedMessage = $conn->error;
+            $error = true;
+        }
+    } else if (isset($_POST['cardId'])) {
+        $cardId = clearValue($_POST['cardId']);
+        $sql = "DELETE FROM mcards WHERE id=".$cardId;
+        if ($conn->query($sql) == TRUE) {
+            http_response_code(200);
+            $returnObject->status = "DELETED";
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong... :(";
+            $errorObject->detailedMessage = $conn->error;
+            $error = true;
+        }
     } else {
         $errorObject->message = "Something wrong in your input";
         http_response_code(404);
