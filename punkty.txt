@@ -5,7 +5,7 @@
 + (0.5p) - liczniki
 + (1p) - warstwy
 ? (1p) - WYSiWYG
-- (2p) - zapis tablicy w bazie
-- (2p) - przywracanie tablicy z bazy
++ (2p) - zapis tablicy w bazie
++ (2p) - przywracanie tablicy z bazy
 
-Suma: 5
+Suma: 9
