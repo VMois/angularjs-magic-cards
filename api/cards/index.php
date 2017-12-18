@@ -21,9 +21,6 @@ if ($method == "POST") {
         $height = clearValue($_POST['height']);
         $prevId = clearValue($_POST['prevId']);
         $tableId = clearValue($_POST['tableId']);
-        if ($prevId == "0") {
-            $prevId = null;
-        }
         $sql = "INSERT INTO mcards (x, y, prev, table_id, width, height) 
                     VALUES (".$cardX.",".$cardY.",".$prevId.",".$tableId.",".$width.",".$height.")";
         if ($conn->query($sql) == TRUE) {
@@ -31,7 +28,7 @@ if ($method == "POST") {
             http_response_code(200);
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
+            $errorObject->message = "Something wrong in card creation :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -45,7 +42,7 @@ if ($method == "POST") {
             $returnObject->status = "UPDATED";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
+            $errorObject->message = "Something wrong in card position update :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
