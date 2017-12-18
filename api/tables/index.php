@@ -41,21 +41,22 @@ if ($method == "GET") {
 
         // update num_rows
         $returnObject->num_rows = $numRows;
-
-        $cards_sql = "SELECT * FROM mcards WHERE table_id=".$returnObject->id." ORDER BY prev";
-        $result = $conn->query($cards_sql);
-        $returnObject->cards = array();
-        if($result->num_rows > 0) {
-            while($row = $result->fetch_assoc()) {
-                $temp = new StdClass;
-                $temp->id = (int) $row['id'];
-                $temp->x = (int) $row['x'];
-                $temp->y = (int) $row['y'];
-                $temp->width = (int) $row['width'];
-                $temp->height = (int) $row['height'];
-                $temp->text = $row['text'];
-                $temp->prev = (int) $row['prev'];
-                array_push($returnObject->cards, $temp);
+        if ($numRows > 0) {
+            $cards_sql = "SELECT * FROM mcards WHERE table_id=".$returnObject->id." ORDER BY prev";
+            $result = $conn->query($cards_sql);
+            $returnObject->cards = array();
+            if($result->num_rows > 0) {
+                while($row = $result->fetch_assoc()) {
+                    $temp = new StdClass;
+                    $temp->id = (int) $row['id'];
+                    $temp->x = (int) $row['x'];
+                    $temp->y = (int) $row['y'];
+                    $temp->width = (int) $row['width'];
+                    $temp->height = (int) $row['height'];
+                    $temp->text = $row['text'];
+                    $temp->prev = (int) $row['prev'];
+                    array_push($returnObject->cards, $temp);
+                }
             }
         }
 
