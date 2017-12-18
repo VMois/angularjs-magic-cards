@@ -300,7 +300,7 @@ mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsA
             // Check if size is changed and after that send data to server
             $document.off('mousemove', resizeMouseMove);
             $document.off('mouseup', resizeMouseUp);
-            cardsApi.updateCardPosition(cardId, cardWidth, cardHeight);
+            cardsApi.updateCardSize(cardId, cardWidth, cardHeight);
         };
       }
     };
