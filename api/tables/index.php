@@ -9,8 +9,9 @@ header('Content-Type: application/json');
 
 $errorObject = new StdClass;
 $returnObject = new StdClass;
+$error = false; 
 
-// get table 
+// get table and related cards
 if ($method == "GET") {
     if (isset($_GET['name'])) {
 
@@ -59,49 +60,46 @@ if ($method == "GET") {
                 }
             }
         }
-
-        $json_to_return = json_encode( (array)$returnObject );
-
-        // set response code to HTTP 200
         http_response_code(200);
-
-        echo $json_to_return;
     } else {
-        $errorObject->message = "name is required in GET request";
+        $errorObject->message = "name of table is required in GET request";
         http_response_code(404);
-        echo json_encode( (array)$errorObject );
+        $error = true;
     }
 // create table
 } else if ($method == "POST") {
     if (isset($_POST['name'])) {
         $name = clearValue($_POST['name']);
+
         $sql = "INSERT INTO mtables (name) VALUES ('".$name."')";
-        $afterSql = "SELECT id, name, count, onboard FROM mtables WHERE name='".$name."'";
+
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
-            $result = $conn->query($afterSql);
-            if ($result->num_rows == 1) {
-                // update new object
-                while($row = $result->fetch_assoc()) {
-                    $returnObject->id = (int) $row["id"];
-                    $returnObject->count = (int) $row["count"];
-                    $returnObject->onboard = (int) $row["onboard"];
-                    $returnObject->name = $row["name"];
-                }
-            }
-            echo json_encode( (array)$returnObject );
+            $returnObject->id = $conn->insert_id;
+            $returnObject->count = 0;
+            $returnObject->onboard = 0;
+            $returnObject->name = $name;
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
-            echo json_encode( (array)$errorObject );
+            $errorObject->message = "Error while table creation :(";
+            $errorObject->detailedMessage = $conn->error;
+            $error = true;
         }
     } else {
         $errorObject->message = "name is required in POST request";
         http_response_code(404);
-        echo json_encode( (array)$errorObject );
+        $error = true;
     }
 } else {
     http_response_code(405);
+}
+
+$conn->close();
+
+if ($error) {
+    echo json_encode( (array)$errorObject );
+} else  {
+    echo json_encode( (array)$returnObject );
 }
 
 ?>
