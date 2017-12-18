@@ -79,7 +79,7 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
                 left: card.x + 'px'
             });
             $timeout(function () {
-                restoredCard.find("div").text(card.text)
+                restoredCard.find("div").html(card.text);
             }, 100);
             var newObj = {
                 el: restoredCard
@@ -231,7 +231,9 @@ mcardsApp.directive('edit', ['$document', function($document) {
       },
       link: function(scope, element, attr) {
         scope.save = function () {
-            scope.$parent.editCardEnd(scope.text, scope.el);
+            var editor = angular.element(document.getElementById('editor'));
+            editor = editor.find("div");
+            scope.$parent.editCardEnd(editor.html(), scope.el);
         };
 
         scope.cancel = function () {
@@ -239,10 +241,17 @@ mcardsApp.directive('edit', ['$document', function($document) {
         };
 
         scope.$watch("details", function(newValue, oldValue) {
-            if (newValue) {
+            if (newValue && scope.quill) {
+                var editor = angular.element(document.getElementById('editor')).find("div");
                 scope.el = newValue.el;
                 scope.text = newValue.text;
+                if (editor) {
+                    editor.html(scope.text);
+                }
             }
+        });
+        scope.quill = new Quill('#editor', {
+            theme: 'snow'
         });
       }
     }
@@ -305,14 +314,12 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
         }
 
         scope.deleteThisCard = function (ev) {
-            // TODO: Add database call to delete
             scope.$parent.deleteCardFromList(element);
             ev.path[1].remove();
         }
 
         scope.editCard = function () {
-            // TODO: Find a better way to get text from card
-            const text = element.find("div").text();
+            const text = element.find("div").html();
             scope.$parent.editCard(text, element);
         };
 
@@ -359,7 +366,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
     var cardsList = [];
-
+        
     // set default background image
     viewPreferences.setTableBackground(mainSettings.defaultBackgroundImage);
 
@@ -487,17 +494,17 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         $scope.isEdit = true;
     };
 
-    $scope.editCardEnd = function(text, element) {
+    $scope.editCardEnd = function(html, element) {
         if (element) {
             const cardId = parseInt(element.attr('data-uid'));
-            cardsApi.updateText(cardId, text)
+            cardsApi.updateText(cardId, html)
             .then(function() {
-                element.find("div").text(text);
+                element.find("div").html(html);
             })
             .catch(function(err) {
                 console.error(err);
             });
-            $scope.isEdit = false;
         }
+        $scope.isEdit = false;
     }
 });

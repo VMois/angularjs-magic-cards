@@ -80,8 +80,10 @@ if ($method == "POST") {
     } else if (isset($_POST['cardId']) && isset($_POST['text'])) {
         $cardId = clearValue($_POST['cardId']);
         $text = clearValue($_POST['text']);
-        $sql = "UPDATE mcards SET text='".$text."' WHERE id=".$cardId;
-        if ($conn->query($sql) == TRUE) {
+        $sql = 'UPDATE mcards SET text="'.$text.'" WHERE id='.$cardId;
+        $stmt = $conn->prepare("UPDATE mcards SET text=? WHERE id=?");
+        $stmt->bind_param("si", $text, $cardId);
+        if($stmt->execute()) {
             http_response_code(200);
             $returnObject->status = "UPDATED TEXT";
         } else {
@@ -90,6 +92,7 @@ if ($method == "POST") {
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
+        $stmt->close();
     } else if (isset($_POST['cardId'])) {
         $cardId = clearValue($_POST['cardId']);
         $sql = "DELETE FROM mcards WHERE id=".$cardId;
@@ -112,6 +115,8 @@ if ($method == "POST") {
     http_response_code(405);
     $error = true;
 }
+
+$conn->close();
 
 if ($error) {
     echo json_encode( (array)$errorObject );

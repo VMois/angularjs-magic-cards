@@ -70,9 +70,12 @@
     transform: translateY(-50%);
     width: 50%;
     height: 50%;
-    padding-top: 5%;
     background-color: white;
     border: 0.1em solid green;
+}
+
+#editor {
+    height: 70%;
 }
 
 .main-edit textarea {

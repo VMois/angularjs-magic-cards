@@ -53,7 +53,7 @@ if ($method == "GET") {
                     $temp->y = (int) $row['y'];
                     $temp->width = (int) $row['width'];
                     $temp->height = (int) $row['height'];
-                    $temp->text = $row['text'];
+                    $temp->text = html_entity_decode($row['text']);
                     $temp->prev = (int) $row['prev'];
                     array_push($returnObject->cards, $temp);
                 }

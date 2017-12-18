@@ -11,5 +11,6 @@
         <script src="js/settings.js"></script>
         <script src="js/main.js"></script>
         <link rel="stylesheet" href="css/reset.css">
+        <script src="https://cdn.quilljs.com/1.3.4/quill.js"></script>
     </body>
 </html>
