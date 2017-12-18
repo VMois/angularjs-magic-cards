@@ -229,6 +229,10 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
         var cardWidth = element[0].clientWidth;
         var cardHeight = element[0].clientHeight;
 
+        // default start x and y
+        var x = element[0].offsetLeft;
+        var y = element[0].offsetTop;
+
         // Terrible solution, I know (
         var cardId = parseInt(element.attr('data-uid'));
         if(isNaN(cardId)) {
@@ -236,13 +240,13 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
         };
         function run() {
             cardId = parseInt(element.attr('data-uid'));
-            console.log(cardId);
+            cardWidth = element[0].clientWidth;
+            cardHeight = element[0].clientHeight;
+            x = element[0].offsetLeft;
+            y = element[0].offsetTop;
         }
         $timeout(run, 100);
 
-        // default start x and y
-        var x = element[0].offsetLeft;
-        var y = element[0].offsetTop;
         element.on('mousedown', function(event) {
           event.preventDefault();
           startX = event.pageX - x;
