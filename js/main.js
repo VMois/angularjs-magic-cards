@@ -67,7 +67,28 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
     this.restoreCards = function(cards, scope) {
         const rootTable = angular.element(document.getElementById('rootTable'));
         const cardsList = [];
-        cards.forEach(function(card) {
+        const sortedCards = [];
+
+        // data structure = linked list
+        // TODO: Write in more pretty way
+        function findInArray(prevId, arr) {
+            for (var k = 0; k < arr.length; k ++) {
+                if (arr[k].prev === prevId) return arr[k];
+            }
+        }
+        var startIndex = 0;
+        var tempCard = cards[startIndex];
+        sortedCards[startIndex] = tempCard;
+        var tempId = tempCard.id;
+        startIndex++;
+        for(var i = 1; i < cards.length; i++) {
+            var tempCard = findInArray(tempId, cards);
+            console.log(tempCard);
+            sortedCards[startIndex] = tempCard;
+            var tempId = tempCard.id;
+            startIndex++;
+        }
+        sortedCards.forEach(function(card) {
             var restoredCard = $compile("<div card class='base_card'></div>")( scope );
             restoredCard.attr('data-uid', card.id);
             restoredCard.css({
@@ -458,14 +479,15 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         var firstCardId = parseInt(cardsList[deleteId].el.attr('data-uid'));
         var firstCardPrev = 0;
         if (deleteId > 0) {
-            firstCardPrev = deleteId;
+            firstCardPrev = parseInt(cardsList[deleteId - 1].el.attr('data-uid'));
         }
         var secondCardId = parseInt(element.attr('data-uid'));
         var secondCardPrev = 0;
         if (cardsList.length > 1) {
-            secondCardPrev = cardsList.length - 1;
+            secondCardPrev = cardsList[cardsList.length - 2].el.attr('data-uid');
         }
         cardsHelper.updateZindex(cardsList);
+
         cardsApi.updateCardZindex(firstCardId, secondCardId, firstCardPrev, secondCardPrev)
         .catch(function(err) {
             console.error(err);
