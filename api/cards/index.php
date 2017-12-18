@@ -28,7 +28,7 @@ if ($method == "POST") {
             http_response_code(200);
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong in card creation :(";
+            $errorObject->message = "Error while card creation :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -39,10 +39,9 @@ if ($method == "POST") {
         $sql = "UPDATE mcards SET x=".$cardX.", y=".$cardY." WHERE id=".$cardId;
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
-            $returnObject->status = "UPDATED";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong in card position update :(";
+            $errorObject->message = "Error while card position update :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -53,10 +52,9 @@ if ($method == "POST") {
         $sql = "UPDATE mcards SET width=".$cardWidth.", height=".$cardHeight." WHERE id=".$cardId;
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
-            $returnObject->status = "UPDATED";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
+            $errorObject->message = "Error while card size update :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -70,10 +68,9 @@ if ($method == "POST") {
         $secondSql = "UPDATE mcards SET prev=".$secondCardPrev." WHERE id=".$secondCardId;
         if ($conn->query($firstSql) == TRUE && $conn->query($secondSql) == TRUE) {
             http_response_code(200);
-            $returnObject->status = "UPDATED ZINDEX";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong with zIndex :(";
+            $errorObject->message = "Error while cards zIndex update :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -85,10 +82,9 @@ if ($method == "POST") {
         $stmt->bind_param("si", $text, $cardId);
         if($stmt->execute()) {
             http_response_code(200);
-            $returnObject->status = "UPDATED TEXT";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong in text... :(";
+            $errorObject->message = "Error while card text update :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
@@ -98,20 +94,19 @@ if ($method == "POST") {
         $sql = "DELETE FROM mcards WHERE id=".$cardId;
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
-            $returnObject->status = "DELETED";
         } else {
             http_response_code(500);
-            $errorObject->message = "Something wrong... :(";
+            $errorObject->message = "Error while card deletion :(";
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
     } else {
-        $errorObject->message = "Something wrong in your input";
+        $errorObject->message = "Something wrong in your input, please check your POST request";
         http_response_code(404);
         $error = true;
     }
 } else {
-    $errorObject->message = "Method is not allowed";
+    $errorObject->message = "Only POST method is allowed";
     http_response_code(405);
     $error = true;
 }
