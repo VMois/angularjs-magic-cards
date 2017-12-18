@@ -36,6 +36,36 @@ if ($method == "POST") {
             $errorObject->detailedMessage = $conn->error;
             echo json_encode( (array)$errorObject );
         }
+    } else if (isset($_POST['cardX']) && isset($_POST['cardY']) && isset($_POST['cardId'])) {
+        $cardId = clearValue($_POST['cardId']);
+        $cardX = clearValue($_POST['cardX']);
+        $cardY = clearValue($_POST['cardY']);
+        $sql = "UPDATE mcards SET x=".$cardX.", y=".$cardY." WHERE id=".$cardId;
+        if ($conn->query($sql) == TRUE) {
+            http_response_code(200);
+            $returnObject->status = "UPDATED";
+            echo json_encode( (array)$returnObject );
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong... :(";
+            $errorObject->detailedMessage = $conn->error;
+            echo json_encode( (array)$errorObject );
+        }
+    } else if (isset($_POST['cardWidth']) && isset($_POST['cardHeight']) && isset($_POST['cardId'])) {
+        $cardId = clearValue($_POST['cardId']);
+        $cardWidth = clearValue($_POST['cardWidth']);
+        $cardHeight = clearValue($_POST['cardHeight']);
+        $sql = "UPDATE mcards SET width=".$cardWidth.", height=".$cardHeight." WHERE id=".$cardId;
+        if ($conn->query($sql) == TRUE) {
+            http_response_code(200);
+            $returnObject->status = "UPDATED";
+            echo json_encode( (array)$returnObject );
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong... :(";
+            $errorObject->detailedMessage = $conn->error;
+            echo json_encode( (array)$errorObject );
+        }
     } else if (isset($_POST['cardId'])) {
         $cardId = clearValue($_POST['cardId']);
         $sql = "DELETE FROM mcards WHERE id=".$cardId;

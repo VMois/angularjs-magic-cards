@@ -120,6 +120,34 @@ mcardsApp.service('cardsApi', function($http) {
             });
         });
     }
+
+    this.updateCardPosition = function(cardId, x, y) {
+        const payload = `cardId=${cardId}&cardX=${x}&cardY=${y}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response);
+            }, function(response) {
+                reject(response);
+            });
+        });
+    }
+
+    this.updateCardSize = function(cardId, width, height) {
+        const payload = `cardId=${cardId}&cardWidth=${width}&cardHeight=${height}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response);
+            }, function(response) {
+                reject(response);
+            });
+        });
+    }
 });
 
 mcardsApp.service('tableApi', function($http) {
@@ -190,7 +218,7 @@ mcardsApp.directive('edit', ['$document', function($document) {
     }
 }]);
 
-mcardsApp.directive('card', ['$document', function($document) {
+mcardsApp.directive('card', ['$document', 'cardsApi', function($document, cardsApi) {
     return {
       templateUrl: 'card.html',
       scope: {},
@@ -200,6 +228,8 @@ mcardsApp.directive('card', ['$document', function($document) {
 
         var cardWidth = element[0].clientWidth;
         var cardHeight = element[0].clientHeight;
+
+        const cardId = parseInt(element.attr('data-uid'));
 
         // default start x and y
         var x = element[0].offsetLeft;
@@ -225,6 +255,7 @@ mcardsApp.directive('card', ['$document', function($document) {
         function mouseup() {
           $document.off('mousemove', mousemove);
           $document.off('mouseup', mouseup);
+          cardsApi.updateCardPosition(cardId, x, y);
         }
 
         scope.deleteThisCard = function (ev) {
@@ -269,6 +300,7 @@ mcardsApp.directive('card', ['$document', function($document) {
             // Check if size is changed and after that send data to server
             $document.off('mousemove', resizeMouseMove);
             $document.off('mouseup', resizeMouseUp);
+            cardsApi.updateCardPosition(cardId, cardWidth, cardHeight);
         };
       }
     };
