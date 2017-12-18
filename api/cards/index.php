@@ -9,6 +9,7 @@ header('Content-Type: application/json');
 
 $errorObject = new StdClass;
 $returnObject = new StdClass;
+$error = false;
 
 if ($method == "POST") {
     if (isset($_POST['cardX']) && isset($_POST['cardY']) && isset($_POST['text']) 
@@ -18,7 +19,6 @@ if ($method == "POST") {
         $cardY = clearValue($_POST['cardY']);
         $width = clearValue($_POST['width']);
         $height = clearValue($_POST['height']);
-        //$text = clearValue($_POST['text']);
         $prevId = clearValue($_POST['prevId']);
         $tableId = clearValue($_POST['tableId']);
         if ($prevId == "0") {
@@ -29,12 +29,11 @@ if ($method == "POST") {
         if ($conn->query($sql) == TRUE) {
             $returnObject->id = $conn->insert_id;
             http_response_code(200);
-            echo json_encode( (array)$returnObject );
         } else {
             http_response_code(500);
             $errorObject->message = "Something wrong... :(";
             $errorObject->detailedMessage = $conn->error;
-            echo json_encode( (array)$errorObject );
+            $error = true;
         }
     } else if (isset($_POST['cardX']) && isset($_POST['cardY']) && isset($_POST['cardId'])) {
         $cardId = clearValue($_POST['cardId']);
@@ -44,12 +43,11 @@ if ($method == "POST") {
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
             $returnObject->status = "UPDATED";
-            echo json_encode( (array)$returnObject );
         } else {
             http_response_code(500);
             $errorObject->message = "Something wrong... :(";
             $errorObject->detailedMessage = $conn->error;
-            echo json_encode( (array)$errorObject );
+            $error = true;
         }
     } else if (isset($_POST['cardWidth']) && isset($_POST['cardHeight']) && isset($_POST['cardId'])) {
         $cardId = clearValue($_POST['cardId']);
@@ -59,12 +57,11 @@ if ($method == "POST") {
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
             $returnObject->status = "UPDATED";
-            echo json_encode( (array)$returnObject );
         } else {
             http_response_code(500);
             $errorObject->message = "Something wrong... :(";
             $errorObject->detailedMessage = $conn->error;
-            echo json_encode( (array)$errorObject );
+            $error = true;
         }
     } else if (isset($_POST['cardId'])) {
         $cardId = clearValue($_POST['cardId']);
@@ -72,19 +69,26 @@ if ($method == "POST") {
         if ($conn->query($sql) == TRUE) {
             http_response_code(200);
             $returnObject->status = "DELETED";
-            echo json_encode( (array)$returnObject );
         } else {
             http_response_code(500);
             $errorObject->message = "Something wrong... :(";
             $errorObject->detailedMessage = $conn->error;
-            echo json_encode( (array)$errorObject );
+            $error = true;
         }
     } else {
         $errorObject->message = "Something wrong in your input";
         http_response_code(404);
-        echo json_encode( (array)$errorObject );
+        $error = true;
     }
 } else {
+    $errorObject->message = "Method is not allowed";
     http_response_code(405);
+    $error = true;
+}
+
+if ($error) {
+    echo json_encode( (array)$errorObject );
+} else {
+    echo json_encode( (array)$returnObject );
 }
 ?>
