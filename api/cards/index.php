@@ -72,6 +72,24 @@ if ($method == "POST") {
             $errorObject->detailedMessage = $conn->error;
             $error = true;
         }
+    } else if (isset($_POST['firstCardId']) && isset($_POST['secondCardId']) 
+    && isset($_POST['firstCardPrev']) && isset($_POST['secondCardPrev'])) {
+        $firstCardId = clearValue($_POST['firstCardId']);
+        $secondCardId = clearValue($_POST['secondCardId']);
+        $firstCardPrev = clearValue($_POST['firstCardPrev']);
+        $secondCardPrev = clearValue($_POST['secondCardPrev']);
+        $firstSql = "UPDATE mcards SET prev=".$firstCardPrev." WHERE id=".$firstCardId;
+        $secondSql = "UPDATE mcards SET prev=".$secondCardPrev." WHERE id=".$secondCardId;
+        if ($conn->query($firstSql) == TRUE && $conn->query($secondSql) == TRUE) {
+            http_response_code(200);
+            $returnObject->status = "UPDATED ZINDEX";
+        } else {
+            http_response_code(500);
+            $errorObject->message = "Something wrong with zIndex :(";
+            $errorObject->detailedMessage = $conn->error;
+            $error = true;
+        }
+
     } else {
         $errorObject->message = "Something wrong in your input";
         http_response_code(404);

@@ -78,7 +78,6 @@ mcardsApp.service('cardsHelper', function($compile) {
                 top: card.y + 'px',
                 left: card.x + 'px'
             });
-            //rootTable.append(restoredCard);
             restoredCard.text(card.text);
             var newObj = {
                 el: restoredCard
@@ -148,6 +147,21 @@ mcardsApp.service('cardsApi', function($http) {
             });
         });
     }
+
+    this.updateCardZindex = function(firstCardId, secondCardId, firstCardPrev, secondCardPrev) {
+        const payload = `firstCardId=${firstCardId}&secondCardId=${secondCardId}&firstCardPrev=${firstCardPrev}&secondCardPrev=${secondCardPrev}`;
+        return new Promise(function (resolve, reject) {
+            $http.post(mainSettings.rootApiPath + "cards/", payload, {
+                // change default content-type from json to x-www-form
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'}
+            }).then(function(response) {
+                resolve(response);
+            }, function(response) {
+                reject(response);
+            });
+        });
+    }
+    
 });
 
 mcardsApp.service('tableApi', function($http) {
@@ -377,7 +391,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         var newCard = $compile("<div card class='base_card'></div>")( $scope );
         var prevId = 0;
         if (cardsList.length > 0) {
-            prevId = parseInt(cardsList[cardsList.length - 1].el.attr('data-uid'));
+            prevId = cardsList.length;
         }
         var card = {
             width: 200,
@@ -412,15 +426,27 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         cardsList.forEach(function(elObj) {
             elObj.el.removeClass('active-card');
         });
-
         const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
 
         element.addClass('active-card');
 
         cardsList.push(cardsList[deleteId]);
         cardsList.splice(deleteId, 1);
-
+        var firstCardId = parseInt(cardsList[deleteId].el.attr('data-uid'));
+        var firstCardPrev = 0;
+        if (deleteId > 0) {
+            firstCardPrev = deleteId;
+        }
+        var secondCardId = parseInt(element.attr('data-uid'));
+        var secondCardPrev = 0;
+        if (cardsList.length > 1) {
+            secondCardPrev = cardsList.length - 1;
+        }
         cardsHelper.updateZindex(cardsList);
+        cardsApi.updateCardZindex(firstCardId, secondCardId, firstCardPrev, secondCardPrev)
+        .catch(function(err) {
+            console.error(err);
+        });
     };
 
     $scope.deleteCardFromList = function(element) {
