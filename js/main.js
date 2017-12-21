@@ -68,7 +68,9 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
         const rootTable = angular.element(document.getElementById('rootTable'));
         const cardsList = [];
         const sortedCards = [];
-
+        if (cards.length === 0) {
+            return cardsList;
+        }
         // data structure = linked list
         // TODO: Write in more pretty way
         function findInArray(prevId, arr) {
@@ -83,7 +85,6 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
         startIndex++;
         for(var i = 1; i < cards.length; i++) {
             var tempCard = findInArray(tempId, cards);
-            console.log(tempCard);
             sortedCards[startIndex] = tempCard;
             var tempId = tempCard.id;
             startIndex++;
@@ -283,7 +284,7 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
       templateUrl: 'card.html',
       scope: {},
       link: function(scope, element, attr) {
-        var startX = 0, startY = 0; 
+        var startX = 0, startY = 0, startPageX, startPageY; 
         var startResizeX = 0, startResizeY = 0;
 
         var cardWidth = element[0].clientWidth;
@@ -309,16 +310,23 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
 
         element.on('mousedown', function(event) {
           event.preventDefault();
+          event.stopPropagation(); 
+          x = element[0].offsetLeft;
+          y = element[0].offsetTop;      
           startX = event.pageX - x;
           startY = event.pageY - y;
+          startPageX = event.pageX;
+          startPageY = event.pageY;
           $document.on('mousemove', mousemove);
           $document.on('mouseup', mouseup);
           scope.$parent.setCardFocus(element);
+          scope.$parent.recalculatePositions();
         });
   
         function mousemove(event) {
           y = event.pageY - startY;
           x = event.pageX - startX;
+          scope.$parent.moveGroup(event.pageX - startPageX, event.pageY - startPageY);
           element.css({
             top: y + 'px',
             left: x + 'px'
@@ -349,6 +357,7 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
             ev.preventDefault();
             startResizeX = ev.pageX;
             startResizeY = ev.pageY;
+            scope.$parent.stopMoveGroup();
             $document.on('mousemove', resizeMouseMove);
             $document.on('mouseup', resizeMouseUp);
             scope.$parent.setCardFocus(element);
@@ -383,7 +392,7 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
     };
   }]);
 
-mcardsApp.controller('tableController', function($routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper, cardsApi) {
+mcardsApp.controller('tableController', function($document, $routeParams, $scope, $http, tableApi, $compile, viewPreferences, cardsHelper, cardsApi) {
     const tableName = $routeParams.tableName;
     const rootTable = angular.element(document.getElementById('rootTable'));
     var cardsList = [];
@@ -435,8 +444,9 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         var newCard = $compile("<div card class='base_card'></div>")( $scope );
         var prevId = 0;
         if (cardsList.length > 0) {
-            prevId = cardsList.length;
+            prevId = parseInt(cardsList[cardsList.length - 1].el.attr('data-uid'));
         }
+        
         var card = {
             width: 200,
             height: 200,
@@ -472,6 +482,7 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
         });
         const deleteId = cardsHelper.findListIdByUniqueID(element.attr('data-uid'), cardsList);
 
+        element.removeClass('group-active-card');
         element.addClass('active-card');
 
         cardsList.push(cardsList[deleteId]);
@@ -528,5 +539,95 @@ mcardsApp.controller('tableController', function($routeParams, $scope, $http, ta
             });
         }
         $scope.isEdit = false;
+    }
+
+    var startGroupX, startGroupY = 0;
+    var groupElement = angular.element(document.createElement("div"));
+    groupElement.addClass("group");
+    var moveGroupList = [];
+    rootTable.append(groupElement);
+
+    function groupmousemove(event) {
+        y = event.pageY - startGroupY;
+        x = event.pageX - startGroupX;
+        cardsList.forEach(function(card, index) {
+            var offLeft = card.el[0].offsetLeft;
+            var offTop = card.el[0].offsetTop;
+            if ((offLeft >= startGroupX && offTop >= startGroupY
+            && offLeft <= event.pageX && offTop <= event.pageY)) {
+                card.el.removeClass('active-card');
+                card.el.addClass('group-active-card');
+                moveGroupList[index] = {
+                    el: card.el,
+                    left: offLeft,
+                    top: offTop
+                };
+            } else {
+                card.el.removeClass('group-active-card');
+            }
+        });
+        groupElement.css({
+          height: y + 'px',
+          width: x + 'px'
+        });
+    }
+
+    function groupmouseup(event) {
+        groupElement.css({
+            width: '0px',
+            height: '0px',
+            top: '0px',
+            left: '0px',
+            display: 'none'
+        });
+        console.log(moveGroupList);
+        $document.off('mousemove', groupmousemove);
+        $document.off('mouseup', groupmouseup);
+    }
+
+    rootTable.on('mousedown', function(event) {
+        startGroupX = event.pageX - groupElement[0].offsetLeft;
+        startGroupY = event.pageY - groupElement[0].offsetTop;
+        moveGroupList = [];
+        groupElement.css({
+            top: startGroupY + 'px',
+            left: startGroupX + 'px',
+            display: 'block',
+            position: 'absolute'
+        });
+        $document.on('mousemove', groupmousemove);
+        $document.on('mouseup', groupmouseup);
+    });
+
+    $scope.moveGroup = function(posX, posY) {
+        moveGroupList.forEach(function(card) {
+            if (card) {
+                card.el.css({
+                    top: (card.top + posY) + 'px',
+                    left: (card.left + posX) + 'px'
+                });
+            }
+        });
+    };
+
+    $scope.stopMoveGroup = function() {
+        moveGroupList.forEach(function(card) {
+            if (card) {
+                card.el.removeClass('group-active-card');
+            }
+        });
+        moveGroupList = [];
+    }
+
+    $scope.recalculatePositions = function() {
+        moveGroupList.forEach(function(card, index) {
+            if (card) {
+                moveGroupList[index] = {
+                    el: card.el,
+                    top: card.el[0].offsetTop,
+                    left: card.el[0].offsetLeft
+                };
+            }
+        });
     }
 });
