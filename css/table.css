@@ -78,6 +78,13 @@
     border: 0.1em solid red;
 }
 
+.base_edit {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+}
+
 .main-edit {
     position: relative;
     margin: 0 auto;

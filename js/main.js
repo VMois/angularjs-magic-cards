@@ -340,6 +340,7 @@ mcardsApp.directive('card', ['$document', 'cardsApi', '$timeout', function($docu
           .catch(function(err) {
               console.error(err);
           });
+          scope.$parent.writeGroupToDataBase(cardId);
         }
 
         scope.deleteThisCard = function (ev) {
@@ -571,6 +572,19 @@ mcardsApp.controller('tableController', function($document, $routeParams, $scope
           width: x + 'px'
         });
     }
+    $scope.writeGroupToDataBase = function (authorId) {
+        moveGroupList.forEach(function(card) {
+            var cardId = parseInt(card.el.attr('data-uid'));
+            if (cardId !== authorId) {
+                var cardx = parseInt(card.el[0].offsetLeft);
+                var cardy = parseInt(card.el[0].offsetTop);
+                cardsApi.updateCardPosition(cardId, cardx, cardy)
+                .catch(function(err) {
+                    console.error(err);
+                });
+            }
+        });
+    };
 
     function groupmouseup(event) {
         groupElement.css({
@@ -580,7 +594,6 @@ mcardsApp.controller('tableController', function($document, $routeParams, $scope
             left: '0px',
             display: 'none'
         });
-        console.log(moveGroupList);
         $document.off('mousemove', groupmousemove);
         $document.off('mouseup', groupmouseup);
     }
@@ -616,6 +629,7 @@ mcardsApp.controller('tableController', function($document, $routeParams, $scope
                 card.el.removeClass('group-active-card');
             }
         });
+        $scope.writeGroupToDataBase();
         moveGroupList = [];
     }
 
