@@ -89,7 +89,7 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
             var tempId = tempCard.id;
             startIndex++;
         }
-        sortedCards.forEach(function(card) {
+        sortedCards.forEach(function(card, index) {
             var restoredCard = $compile("<div card class='base_card'></div>")( scope );
             restoredCard.attr('data-uid', card.id);
             restoredCard.css({
@@ -99,6 +99,9 @@ mcardsApp.service('cardsHelper', function($compile, $timeout) {
             restoredCard.css({
                 top: card.y + 'px',
                 left: card.x + 'px'
+            });
+            restoredCard.css({
+                zIndex: index
             });
             $timeout(function () {
                 restoredCard.find("div").html(card.text);
@@ -567,10 +570,35 @@ mcardsApp.controller('tableController', function($document, $routeParams, $scope
                 card.el.removeClass('group-active-card');
             }
         });
-        groupElement.css({
-          height: y + 'px',
-          width: x + 'px'
-        });
+        if (x < 0 && y < 0) {
+            groupElement.css({
+                top: event.pageY + 'px',
+                left: event.pageX + 'px'
+            });
+            groupElement.css({
+                height: (startGroupY - event.pageY) + 'px',
+                width: (startGroupX - event.pageX) + 'px'
+            });
+        } else if (y < 0) {
+            groupElement.css({
+                top: event.pageY + 'px'
+            });
+            groupElement.css({
+                height: (startGroupY - event.pageY) + 'px'
+            });
+        } else if (x < 0) {
+            groupElement.css({
+                left: event.pageX + 'px'
+            });
+            groupElement.css({
+                width: (startGroupX - event.pageX) + 'px'
+            });
+        } else {
+            groupElement.css({
+                height: y + 'px',
+                width: x + 'px'
+            });
+        }
     }
     $scope.writeGroupToDataBase = function (authorId) {
         moveGroupList.forEach(function(card) {
